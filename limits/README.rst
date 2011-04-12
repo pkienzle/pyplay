@@ -33,3 +33,13 @@ disk:
 
 Raising an error in the signal handler seem to work
 
+Mac OS 10.4
+===========
+
+Test system::
+
+  8.11.1 Darwin Kernel Version 8.11.1: Wed Oct 10 18:23:28 PDT 2007; root:xnu-792.25.20~1/RELEASE_I386 i386 i386
+
+Behaviour as in above linux system, but SIGXCPU emitted every 1/10th of
+a second or so.
+   
