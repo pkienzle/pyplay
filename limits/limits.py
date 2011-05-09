@@ -16,7 +16,8 @@ SIGTABLE = dict((v,k) for k,v in signal.__dict__.items()
 def sig_handler(signum, frame):
     name = SIGTABLE.get(signum,'UNKNOWN')
     print "received signal", name, signum
-    #raise RuntimeError("Resources exceeded")
+    signal.signal(signum, signal.SIG_IGN)
+    raise RuntimeError("Resources exceeded")
 
 def set_signals():
     for v,k in SIGTABLE.items():
@@ -27,7 +28,10 @@ def stress_cpu(n):
     print "start time stress"
     t = time.time()
     while time.time() - t < n+10:
-        for i in range(100000): math.exp(5)
+        try:
+            for i in range(100000): math.exp(5)
+        except RuntimeError:
+            print "ignoring cpu signal"
     print "end time stress"
 def stress_disk(n):
     print "start disk stress"

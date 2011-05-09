@@ -10,6 +10,10 @@ run the following::
 
     python limits.py
 
+Play with the code in sig_handler, trying to raise and/or ignore the signal.
+The behaviour I want is a single warning that I'm almost out of time followed
+by enough time to do cleanup work without being interrupted.
+
 
 Linux
 =====
@@ -31,7 +35,8 @@ disk:
   SIGXFSZ emitted when file is too large, which raises
   IOError(27) File too large
 
-Raising an error in the signal handler seem to work
+Raising an error in the signal handler seem to work, as does resetting
+the handler to SIG_IGN in the handler.
 
 Mac OS 10.4
 ===========
@@ -42,4 +47,4 @@ Test system::
 
 Behaviour as in above linux system, but SIGXCPU emitted every 1/10th of
 a second or so.
-   
+
