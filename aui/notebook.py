@@ -6,7 +6,7 @@ import wx
 import wx.aui
 
 #from wx.aui import AuiNotebook
-from auifloat import AuiNotebookWithFloatingPages as AuiNotebook
+from auinotebookwithfloatingpages import AuiNotebookWithFloatingPages as AuiNotebook
 
 
 import wx.lib.inspection

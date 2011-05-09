@@ -1,0 +1,5 @@
+*.pyc
+*.pyd
+*.dll
+*.so
+*.exe
