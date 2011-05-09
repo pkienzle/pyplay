@@ -1,13 +1,15 @@
 # Started with wxPython demo for AUI MDI child windows
 
+TRACE_EVENTS = False
+
 import wx
 import wx.aui
 
-import wx.py.shell
 import wx.lib.inspection
 
-import inspect
 def event_trace(window,title):
+    if not TRACE_EVENTS: return
+    import inspect
     exclude = ('EVT_COMMAND', 'EVT_COMMAND_RANGE',
                'EVT_IDLE',
                'EVT_UPDATE_UI', 'EVT_UPDATE_UI_RANGE')
@@ -35,6 +37,7 @@ class ParentFrame(wx.aui.AuiMDIParentFrame):
                                           title="AuiMDIParentFrame",
                                           size=(640,480),
                                           style=wx.DEFAULT_FRAME_STYLE)
+        event_trace(self,"MDI parent")
         self.count = 0
         mb = self.MakeMenuBar()
         self.SetMenuBar(mb)
@@ -65,6 +68,7 @@ class ChildFrame(wx.aui.AuiMDIChildFrame):
     def __init__(self, parent, count):
         wx.aui.AuiMDIChildFrame.__init__(self, parent, -1,
                                          title="Child: %d" % count)
+        event_trace(self, "Child %d"%count)
         mb = parent.MakeMenuBar()
         menu = wx.Menu()
         item = menu.Append(-1, "This is child %d's menu" % count)
@@ -80,23 +84,19 @@ class ChildFrame(wx.aui.AuiMDIChildFrame):
         self.SetSizer(sizer)
 
         wx.CallAfter(self.Layout)
-        event_trace(self, "Child %d"%count)
 
 #----------------------------------------------------------------------
 
 class DemoApp(wx.App):
     def OnInit(self):
-        frame = ParentFrame(None)
-        frame.Show()
-        self.SetTopWindow(frame)
-        console = wx.py.shell.ShellFrame(None, locals=dict(app=self,frame=frame))
-        console.Show()
-        wx.lib.inspection.InspectionTool().Show()
-        event_trace(frame,"MDI parent")
+        self.frame = ParentFrame(None)
+        self.frame.Show()
+        self.SetTopWindow(self.frame)
         return True
 
 def main():
-    app = DemoApp()
+    app = DemoApp(redirect=False)
+    wx.lib.inspection.InspectionTool().Show()
     app.MainLoop()
 
 if __name__ == "__main__": main()
