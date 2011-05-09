@@ -5,8 +5,9 @@ TRACE_EVENTS = False
 import wx
 import wx.aui
 
-#from wx.aui import AuiNotebook
-from auinotebookwithfloatingpages import AuiNotebookWithFloatingPages as AuiNotebook
+from wx.aui import AuiNotebook
+# floating pages doesn't work well on Windows; use an alternate technique
+#from auinotebookwithfloatingpages import AuiNotebookWithFloatingPages as AuiNotebook
 
 
 import wx.lib.inspection
