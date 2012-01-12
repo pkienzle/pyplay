@@ -4,7 +4,7 @@ some math experiments.
 Math
 ====
 
-empirical_ci
+`empirical_ci <tree/master/empirical_ci>`_
 
     determine how many samples we need to compute 1-sigma
 
