@@ -5,9 +5,9 @@ TRACE_EVENTS = False
 import wx
 import wx.aui
 
-from wx.aui import AuiNotebook
+#from wx.aui import AuiNotebook
 # floating pages doesn't work well on Windows; use an alternate technique
-#from auinotebookwithfloatingpages import AuiNotebookWithFloatingPages as AuiNotebook
+from auinotebookwithfloatingpages import AuiNotebookWithFloatingPages as AuiNotebook
 
 
 import wx.lib.inspection
@@ -49,16 +49,7 @@ class ParentFrame(wx.Frame):
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
         self.aui = AuiNotebook(self)
 
-        data1 = wx.TextCtrl(self, -1, "This is some text",
-                              style=wx.NO_BORDER | wx.TE_MULTILINE)
-        data2 = wx.TextCtrl(self, -1, "This is some more text",
-                              style=wx.NO_BORDER | wx.TE_MULTILINE)
-        data3 = wx.TextCtrl(self, -1, "This is text 3",
-                              style=wx.NO_BORDER | wx.TE_MULTILINE)
-        self.aui.AddPage(data1, "Data 1")
-        self.aui.AddPage(data2, "Data 2")
-        self.aui.AddPage(data3, "Data 3")
-        event_trace(self.aui, "aui")
+        for i in range(3): self.CreatePage(i)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.aui, 1, wx.EXPAND)
@@ -68,8 +59,13 @@ class ParentFrame(wx.Frame):
 
         self.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnPageClose, self.aui)
 
+    def CreatePage(self, idx):
+        widget = wx.TextCtrl(self, -1, "This is page %d"%idx,
+                             style = wx.NO_BORDER | wx.TE_MULTILINE)
+        self.aui.AddPage(widget, "Data %d"%idx)
+
     def OnPageClose(self, evt):
-        print "Closing"
+        print "closing page", evt.selection
 
     def SavePerspective(self):
         return self.aui.GetAuiManager().SavePerspective()
