@@ -4,33 +4,33 @@ some math experiments.
 Math
 ====
 
-`empirical_ci <tree/master/empirical_ci>`_
+`empirical_ci <pyplay/tree/master/empirical_ci>`_
 
     determine how many samples we need to compute 1-sigma
 
 Python
 ======
 
-inline_tests
+`inline_tests <pyplay/tree/master/inline_tests>`_
 
     does nosetest allow relative imports?
 
-limits
+`limits <pyplay/tree/master/limits>`_
 
     how do I use resource limits on python processes?
 
-mapapply
+`mapapply <pyplay/tree/master/mapapply>`_
 
     How do I use multiprocess map with functions that take multiple arguments
 
 WxPython
 ========
 
-aui
+`aui <pyplay/tree/master/aui>`_
 
     test of floating notebooks
 
-mplinteractor
+`mplinteractor <pyplay/tree/master/aui>`_
 
     interactors on matplotlib graphs
 
