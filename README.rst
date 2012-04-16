@@ -23,12 +23,12 @@ Python
 
     How do I use multiprocess map with functions that take multiple arguments
 
-`abc <pyplay/abc>`_
+`abc <pyplay/tree/master/abc>`_
 
     Explore abstract base class support, checking that missing subclass methods
     get reported and method signatures on the subclass match the base class.  It
     turns out that abc's do not check method signatures, so pyplay/abc contains
-    the module `quack <pyplay/abc/quack.py>`_ which does the work of abc as well
+    the module `quack <pyplay/tree/master/abc/quack.py>`_ which does the work of abc as well
     as checking method signatures.
 
 WxPython
