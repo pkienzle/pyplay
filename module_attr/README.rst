@@ -1,9 +1,9 @@
 Check if hasattr(x,'some_global') returns True before the global variable
 is set in the module.
 
-Answer: yes.
+The answer is no.
 
-Test:
+Test::
 
-python main.py
+    $ python main.py
 
