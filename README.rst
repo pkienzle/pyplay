@@ -28,13 +28,19 @@ Python
     Explore abstract base class support, checking that missing subclass methods
     get reported and method signatures on the subclass match the base class.  It
     turns out that abc's do not check method signatures, so pyplay/abc contains
-    the module `quack <pyplay/tree/master/abc/quack.py>`_ which does the work of abc as well
-    as checking method signatures.
+    the module `quack <pyplay/tree/master/abc/quack.py>`_ which does the work of 
+    abc as well as checking method signatures.
 
 `module_attr <pyplay/tree/master/module_attr>`_
 
     Show that globals are defined by first assignment to the global, not by a
     module level global statement.  
+
+`modpath <pyplay/tree/master/modpath>`_
+
+    Explore ways to find the module path.  Currently this uses fn.__module__ where
+    fn is a function defined within the module.  This meets my immediate needs,
+    so I didn't explore any other solutions.
 
 WxPython
 ========
