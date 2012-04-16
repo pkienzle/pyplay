@@ -17,7 +17,7 @@ should fail, but doesn't::
 
     $ python badargs.py
 
-The module `<pyplay/tree/master/abc/quack.py>`_ checks whether the concrete class walks like a duck, as
+The module `<quack.py>`_ checks whether the concrete class walks like a duck, as
 is shown here::
 
     $ python checkargs.py
