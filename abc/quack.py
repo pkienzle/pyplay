@@ -1,35 +1,71 @@
 """
 Verify duck typing.
 """
-__all__ = ["check_class"]
+__all__ = ["implements"]
 import inspect
 
-def check_class(abstract, concrete):
+import abc
+
+def implements(interface, implementation=None):
     """
-    Check that a concrete class interface matches the abstract base class.
+    Check that a implementation class interface matches the interface class.
 
     Can't check the return types since they are not listed.
-    """
-    #print "check_class",abstract.__name__,concrete.__name__
-    ignore = "__init__", "__doc__"
-    items = inspect.getmembers(abstract)
-    #items = abstract.__dict__.items()
-    for name,abstract_method in items:
-        if name in ignore:
-            # Can specialize __init__
-            continue
-        try:
-            concrete_method = getattr(concrete, name)
-        except AttributeError:
-            raise NotImplementedError("%s does not implement %s"
-                                      %(concrete.__name__, name))
-        #print name,inspect.ismethod(abstract_method), inspect.ismethod(concrete_method)
-        if inspect.ismethod(abstract_method) and inspect.ismethod(concrete_method):
-            check_method_signature(abstract_method, concrete_method)
-        elif type(abstract_method) != type(concrete_method):
-            raise NotImplementedError("attribute <%s> differs in class %s"
-                                      %(name, concrete.__name__))
 
+    If the implementation class is not specified, return a decorator that
+    accepts a implementation class.
+
+    If the interface class is an ABC, only the abstract methods are
+    checked, otherwise all names which do not start with an underscore
+    are checked.  Interface attributes should be types.
+
+    Note: we could allow underscore names to be checked as well, for example
+    by seeing if the underscore name has the same value as its parent
+    underscore name.  For now, just define your interface class as an ABC,
+    or explicitly list the names of all the classes you want to check in
+    __abstractmethods__. [Caveat: haven't tried]
+    """
+    if implementation is None:
+        return lambda cls: implements(interface, cls)
+
+    #print "implements",interface.__name__,implementation.__name__
+    items = inspect.getmembers(interface)
+    abstract_methods = getattr(interface, "__abstractmethods__",None)
+    #items = interface.__dict__.items()
+    for name,value in items:
+        #print name,inspect.ismethod(abstract_method), inspect.ismethod(concrete_method)
+        if inspect.ismethod(value):
+            # If interface is an ABC then only use names that are tagged as abstract
+            if (abstract_methods and name not in abstract_methods) or name.startswith('_'):
+                continue
+            concrete_method = getattr(implementation, name, None)
+            # If interface is an ABC then make sure the implementation overrides
+            # the method, otherwise just check that the method is present
+            if (abstract_methods and concrete_method == value) or not inspect.ismethod(concrete_method):
+                raise NotImplementedError("%s does not implement %s"
+                                          %(implementation.__name__, name))
+            # check that the implementation interface is correct
+            check_method_signature(value, concrete_method)
+        else:
+            if name.startswith('_'):
+                continue
+            # ABCs don't mark required attributes, nor do they need to since
+            # these will be inherited from the ABC.  Duck types needs to
+            # explicitly check for the required attributes.  We do check that
+            # the attribute types match for both ABCs and regular classes.
+            try:
+                concrete_value = getattr(implementation, name)
+            except AttributeError:
+                raise NotImplementedError("%s does not define %s"
+                                          %(implementation.__name__, name))
+
+            interface_type = value if inspect.isclass(value) else type(value) if value is not None else object
+            if not isinstance(concrete_value, interface_type):
+                raise NotImplementedError("attribute <%s> type differs in class %s"
+                                          %(name, implementation.__name__))
+
+    # If called from a decorator, need to return the implementation class
+    return implementation
 
 def check_method_signature(abstract, concrete):
     """
@@ -67,6 +103,12 @@ def test():
     class A(object):
         color = 'red'
         def a(self, a, b, c=2, *args, **kw): pass
+    class ABC(object):
+        __metaclass__ = abc.ABCMeta
+        color = 'red'
+        @abc.abstractmethod
+        def a(self, a, b, c=2, *args, **kw): pass
+        def b(self): pass
     class Mixin:
         color = 'red'
         def a(self, a, b, c=2, *args, **kw): pass
@@ -77,6 +119,8 @@ def test():
         def __init__(self): pass
     class D(Mixin, object):
         def __init__(self): pass
+    class E(ABC):
+        def a(self, a, b, c=2, *varargs, **kw): pass
     class B_not_type(object):
         color = 2
         def a(self, a, b, c=2, *varargs, **keywords): pass
@@ -96,19 +140,35 @@ def test():
     class B_missing_keywords(object):
         color = 'blue'
         def a(self, a, c=2, *varargs): pass
+    class E_bad_sig(ABC):
+        def a(self): pass
+    class E_missing(ABC):
+        pass
 
-    for cls in B,C,D:
-        check_class(A, cls)
-        check_class(Mixin, cls)
+    for cls in B,C,D,E:
+        implements(A, cls)
+        implements(ABC, cls)
+        implements(Mixin, cls)
     for cls in (B_not_type, B_not_def, B_missing_attribute, B_missing_arg,
                 B_extra_arg, B_missing_varargs, B_missing_keywords):
         try:
-            check_class(A, cls)
+            implements(A, cls)
             raise Exception("%s did not raise exception"%cls.__name__)
         except NotImplementedError:
             pass
         try:
-            check_class(Mixin, cls)
+            implements(ABC, cls)
+            raise Exception("%s did not raise exception"%cls.__name__)
+        except NotImplementedError:
+            pass
+        try:
+            implements(Mixin, cls)
+            raise Exception("%s did not raise exception"%cls.__name__)
+        except NotImplementedError:
+            pass
+    for cls in (E_bad_sig, E_missing):
+        try:
+            implements(ABC, cls)
             raise Exception("%s did not raise exception"%cls.__name__)
         except NotImplementedError:
             pass
