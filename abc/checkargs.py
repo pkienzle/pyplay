@@ -10,13 +10,13 @@ class BadImplementation(PluginBase):
         return output.write("no data")
 
 try:
-    quack.check_class(PluginBase,BadImplementation)
+    quack.implements(PluginBase,BadImplementation)
 except Exception,e:
     print "Bad1:",e
 
 # Decorator form
 try:
-    @quack.check_class(PluginBase)
+    @quack.implements(PluginBase)
     class BadImplementation2(PluginBase):
 
         def load(self, input):
@@ -29,8 +29,8 @@ except Exception,e:
 
 # Quack should work for missing, but doesn't
 try:
-    @quack.check_class(PluginBase)
-    class MissingImplementation(PluginBase):
+    @quack.implements(PluginBase)
+    class MissingABC(PluginBase):
         def load(self, input):
             return input.read()
         def _save(self, output, data):
@@ -41,8 +41,8 @@ except Exception,e:
 
 # Quack should work for missing, but doesn't
 try:
-    @quack.check_class(PluginDucktype)
-    class MissingDucktypeImplementation(PluginDucktype):
+    @quack.implements(PluginDucktype)
+    class MissingDucktype(object):
         def load(self, input):
             return input.read()
         def _save(self, output, data):
@@ -51,14 +51,17 @@ try:
 except Exception,e:
     print "Missing:", e
 
-@quack.check_class(PluginBase)
-class GoodImplementation(PluginBase):
+@quack.implements(PluginBase)
+class GoodABCImpl(PluginBase):
     def load(self, input):
         return input.read()
     def save(self, output, data):
         return output.write(data)
 
+@quack.implements(PluginBase)
+class GoodDucktypeImpl(object):
+    def load(self, input):
+        return input.read()
+    def save(self, output, data):
+        return output.write(data)
 
-if __name__ == '__main__':
-    print 'Subclass:', issubclass(GoodImplementation, PluginBase)
-    print 'Instance:', isinstance(GoodImplementation(), PluginBase)
