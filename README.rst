@@ -42,6 +42,13 @@ Python
     fn is a function defined within the module.  This meets my immediate needs,
     so I didn't explore any other solutions.
 
+byline.py
+
+    Implement line buffering on streams that don't have it.  Turns out I don't
+    need this code because the problem I was trying to solve (BZ2 files cutting
+    off early because they used a flush each line) is already solved in python
+    3.2.
+
 WxPython
 ========
 
