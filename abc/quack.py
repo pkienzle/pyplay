@@ -5,25 +5,40 @@ __all__ = ["implements"]
 import inspect
 
 import abc
+from abc import abstractmethod, abstractproperty
 
 def implements(interface, implementation=None):
     """
     Check that a implementation class interface matches the interface class.
 
-    Can't check the return types since they are not listed.
+    Methods in the implementation class should have the same parameters 
+    in the same order as those in the interface class.  Method return 
+    types are not specified, and can't be checked in advance.
 
-    If the implementation class is not specified, return a decorator that
-    accepts a implementation class.
+    Attributes in the interface should be present in the implementation.
+    If the interface attribute is a type or a value, then the implementation
+    attribute value should have the same type.  If the interface attribute
+    is None, then only the presence test is performed.
 
-    If the interface class is an ABC, only the abstract methods are
-    checked, otherwise all names which do not start with an underscore
-    are checked.  Interface attributes should be types.
+    Implementation can be checked at load time using the decorator syntax:
 
-    Note: we could allow underscore names to be checked as well, for example
-    by seeing if the underscore name has the same value as its parent
-    underscore name.  For now, just define your interface class as an ABC,
-    or explicitly list the names of all the classes you want to check in
-    __abstractmethods__. [Caveat: haven't tried]
+        @implements(Base)
+        class Subclass(object):
+            ...
+
+    or at run time using the function call syntax:
+
+        try:
+            implements(Base, Subclass)
+        except NotImplementedError, exc:
+            print exc
+
+    By default only the public names are checked.  If you need to check 
+    names which start with underscore either list all checked methods
+    in the __abstractmethods__ class attribute, or use the usual python
+    abc module to define the abstract methods.  The abc module does not
+    check attribute types or method signatures, so you will still want 
+    to use the implements function to check abcs.
     """
     if implementation is None:
         return lambda cls: implements(interface, cls)
@@ -31,17 +46,23 @@ def implements(interface, implementation=None):
     #print "implements",interface.__name__,implementation.__name__
     items = inspect.getmembers(interface)
     abstract_methods = getattr(interface, "__abstractmethods__",None)
+    #print "abstract methods",abstract_methods
+    #import pprint; pprint.pprint(items)
     #items = interface.__dict__.items()
     for name,value in items:
-        #print name,inspect.ismethod(abstract_method), inspect.ismethod(concrete_method)
+        #print name,inspect.ismethod(value)#, inspect.ismethod(concrete_method)
         if inspect.ismethod(value):
-            # If interface is an ABC then only use names that are tagged as abstract
-            if (abstract_methods and name not in abstract_methods) or name.startswith('_'):
+            # If interface is an ABC then only use names that are tagged 
+            # as abstract; if interface is not an ABC then only use the
+            # public names (i.e., those which don't start with '_')
+            if ((abstract_methods and name not in abstract_methods) 
+                or name.startswith('_')):
                 continue
             concrete_method = getattr(implementation, name, None)
             # If interface is an ABC then make sure the implementation overrides
             # the method, otherwise just check that the method is present
-            if (abstract_methods and concrete_method == value) or not inspect.ismethod(concrete_method):
+            if (not inspect.ismethod(concrete_method) 
+                or getattr(concrete_method, '__isabstractmethod__',False)):
                 raise NotImplementedError("%s does not implement %s"
                                           %(implementation.__name__, name))
             # check that the implementation interface is correct
@@ -59,7 +80,9 @@ def implements(interface, implementation=None):
                 raise NotImplementedError("%s does not define %s"
                                           %(implementation.__name__, name))
 
-            interface_type = value if inspect.isclass(value) else type(value) if value is not None else object
+            interface_type = (value if inspect.isclass(value) else
+                              type(value) if value is not None else 
+                              object)
             if not isinstance(concrete_value, interface_type):
                 raise NotImplementedError("attribute <%s> type differs in class %s"
                                           %(name, implementation.__name__))
@@ -75,7 +98,7 @@ def check_method_signature(abstract, concrete):
 
     Default values should also be the same.
 
-    This won't work with decorators unless they preserve type signature.
+    This check will fail with decorators unless they preserve type signature.
     """
     abstract_spec = inspect.getargspec(abstract)
     concrete_spec = inspect.getargspec(concrete)
@@ -99,16 +122,65 @@ def formatargs(argspec):
     return inspect.formatargspec(argspec.args,argspec.varargs,
                                  argspec.keywords,argspec.defaults)
 
+def checkABC(cls):
+    for base in cls.__mro__:
+        if hasattr(cls, '__abstractmethods__'):
+            implements(base, cls)
+    return cls
+
+class ABC:
+    """
+    Base class for abstract base classes.
+
+    Inherit from this class to create an ABC which checks type signatures
+    and implements issubclass and isinstance with respect to the base
+    class, even if the subclass is implemented with duck typing rather
+    than inheritance.
+
+    Use the @checkABC decorator to check that the class implements the ABC.
+    """
+    __metaclass__ = abc.ABCMeta
+    @classmethod
+    def __subclasshook__(cls, C):
+        """
+        Allow isinstance and issubclass to be used.
+        """
+        #print "subclass check",cls,C
+        try:
+            if implements(cls, C): return True
+        except NotImplementedError:
+            return False
+
+
 def test():
     class A(object):
+        """
+        Template defined by the usual python class definition
+        """
         color = 'red'
         def a(self, a, b, c=2, *args, **kw): pass
-    class ABC(object):
+    class pyABC(object):
+        """
+        Template defined by the awkward python ABC definition
+        """
         __metaclass__ = abc.ABCMeta
         color = 'red'
         @abc.abstractmethod
         def a(self, a, b, c=2, *args, **kw): pass
         def b(self): pass
+        @classmethod
+        def __subclasshook__(cls, C):
+            """
+            Allow isinstance and issubclass to be used.
+            """
+            try:
+                if cls is pyABC and implements(pyABC, C): return True
+            except NotImplementedError:
+                return False
+    class myABC(ABC):
+        color = 'red'
+        @abc.abstractmethod
+        def a(self, a, b, c=2, *args, **kw): pass
     class Mixin:
         color = 'red'
         def a(self, a, b, c=2, *args, **kw): pass
@@ -119,7 +191,9 @@ def test():
         def __init__(self): pass
     class D(Mixin, object):
         def __init__(self): pass
-    class E(ABC):
+    class E(pyABC):
+        def a(self, a, b, c=2, *varargs, **kw): pass
+    class F(myABC):
         def a(self, a, b, c=2, *varargs, **kw): pass
     class B_not_type(object):
         color = 2
@@ -140,38 +214,77 @@ def test():
     class B_missing_keywords(object):
         color = 'blue'
         def a(self, a, c=2, *varargs): pass
-    class E_bad_sig(ABC):
+    class E_bad_sig(pyABC):
         def a(self): pass
-    class E_missing(ABC):
+    class E_missing(pyABC):
+        pass
+    class F_bad_sig(myABC):
+        def a(self): pass
+    class F_missing(myABC):
         pass
 
-    for cls in B,C,D,E:
+    for cls in B,C,D,E,F:
+        #print "should pass",cls
         implements(A, cls)
-        implements(ABC, cls)
+        implements(pyABC, cls)
+        implements(myABC, cls)
         implements(Mixin, cls)
-    for cls in (B_not_type, B_not_def, B_missing_attribute, B_missing_arg,
-                B_extra_arg, B_missing_varargs, B_missing_keywords):
-        try:
-            implements(A, cls)
-            raise Exception("%s did not raise exception"%cls.__name__)
-        except NotImplementedError:
-            pass
-        try:
-            implements(ABC, cls)
-            raise Exception("%s did not raise exception"%cls.__name__)
-        except NotImplementedError:
-            pass
-        try:
-            implements(Mixin, cls)
-            raise Exception("%s did not raise exception"%cls.__name__)
-        except NotImplementedError:
-            pass
-    for cls in (E_bad_sig, E_missing):
-        try:
-            implements(ABC, cls)
-            raise Exception("%s did not raise exception"%cls.__name__)
-        except NotImplementedError:
-            pass
+        assert issubclass(cls, pyABC)
+        assert issubclass(cls, myABC)
+        obj = cls()
+        assert isinstance(obj, pyABC)
+        assert isinstance(obj, myABC)
 
+    for cls in (B_not_type, B_not_def, B_missing_attribute, B_missing_arg,
+                B_extra_arg, B_missing_varargs, B_missing_keywords,
+                dict, unicode, set, list, tuple, int, float, bool,
+                E_bad_sig, E_missing, F_bad_sig, F_missing):
+        #print "should fail",cls
+        assert not issubclass(cls, pyABC)
+        assert not issubclass(cls, myABC)
+        try:
+            obj = cls()
+            assert not isinstance(obj, pyABC)
+            assert not isinstance(obj, myABC)
+        except TypeError: 
+            pass
+        for base in (A, pyABC, myABC, Mixin):
+            try:
+                implements(base, cls)
+                raise Exception("implements(%s,%s) did not raise exception"
+                                % (base.__name__,cls.__name__))
+            except NotImplementedError:
+                pass
+
+    # Decorator checks
+    @checkABC
+    class CheckedPyABC(pyABC):
+        color = 'blue'
+        def a(self, a, b, c=2, *varargs, **keywords): pass
+    assert isinstance(CheckedPyABC(), pyABC)
+
+    @checkABC
+    class CheckedMyABC(myABC):
+        color = 'blue'
+        def a(self, a, b, c=2, *varargs, **keywords): pass
+    assert isinstance(CheckedMyABC(), pyABC)
+
+    @implements(A)
+    class ADecorator(object):
+        color = 'blue'
+        def a(self, a, b, c=2, *varargs, **keywords): pass
+
+    try:
+        @implements(A)
+        class notADecorator(object):
+            color = 3
+        @checkABC
+        class FailedPyABC(pyABC):
+            color = 3
+        raise Exception("exception not raised")
+    except NotImplementedError:
+        pass
+
+    
 if __name__ == "__main__":
     test()
