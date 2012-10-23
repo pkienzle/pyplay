@@ -11,10 +11,10 @@ Test
 
 There are four locking programs all with the same logic:
 
- * flock.py uses the fcntl.flock call to lock the whole file
- * lock.py uses fcntl.lockf, which calls fcntl to lock byte 0
- * lock.c uses fcntl to lock byte 0
- * lock.java uses the getChannel().lock(), which locks byte 0
+* flock.py uses the fcntl.flock call to lock the whole file
+* lock.py uses fcntl.lockf, which calls fcntl to lock byte 0
+* lock.c uses fcntl to lock byte 0
+* lock.java uses the getChannel().lock(), which locks byte 0
 
 I don't know how to trigger flock() from Java, and didn't bother
 to try it from C.  Build the C and java by typing "make" on the
@@ -51,11 +51,11 @@ So the basic locking works.  Now you can repeat the test using
 different kill scenarios on T1 including Ctrl-C, kill and kill -9,
 and using different runtime environments (C, python, java).  
 
-The C program can be run using:
+The C program can be run using::
 
     $ ./lock [msg ...]
 
-and the java program can be run using:
+and the java program can be run using::
 
     $ java lock
 
@@ -73,20 +73,20 @@ for append then there is an implicit seek(0,2) before each write.
 Conclusions
 ===========
 
- 1. Use flock rather than lockf in python if you want to interact 
-    with java locks.
+# Use flock rather than lockf in python if you want to interact 
+  with java locks.
 
- 2. To keep a journal file in python use::
+# To keep a journal file in python use::
 
     import fnctl
     with open("journal","a") as fid:
         fnctl.lockf(fid,fnctl.LOCK_EX)
         fid.write("entry\n")
 
-   On exiting the "with" context, the file is flushed and the
-   lock is released.  
+  On exiting the "with" context, the file is flushed and the
+  lock is released.  
 
- 3. Java is a little more involved::
+# Java is a little more involved::
 
     import java.io.File;
     import java.io.IOException;
@@ -102,7 +102,7 @@ Conclusions
       }
     }
 
- 4. C uses::
+# C uses::
 
     #include <stdlib.h>
     #include <unistd.h>
