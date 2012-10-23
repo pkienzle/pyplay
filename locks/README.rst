@@ -90,7 +90,6 @@ lock is released.
 
     import java.io.File;
     import java.io.IOException;
-    import java.io.RandomAccessFile;
     import java.io.FileOutputStream;
 
     public class lock {
