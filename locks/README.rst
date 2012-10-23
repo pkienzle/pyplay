@@ -73,10 +73,10 @@ for append then there is an implicit seek(0,2) before each write.
 Conclusions
 ===========
 
-# Use flock rather than lockf in python if you want to interact 
+* Use flock rather than lockf in python if you want to interact 
   with java locks.
 
-# To keep a journal file in python use::
+* To keep a journal file in python use::
 
     import fnctl
     with open("journal","a") as fid:
@@ -86,7 +86,7 @@ Conclusions
   On exiting the "with" context, the file is flushed and the
   lock is released.  
 
-# Java is a little more involved::
+* Java is a little more involved::
 
     import java.io.File;
     import java.io.IOException;
@@ -102,7 +102,7 @@ Conclusions
       }
     }
 
-# C uses::
+* C uses::
 
     #include <stdlib.h>
     #include <unistd.h>
