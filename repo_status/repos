@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Show the status of all repos in the specified directory.
 # 
@@ -19,7 +19,7 @@ color_output() {
         c|cyan)    color=36 ;;
         w|white)   color=37 ;;
     esac
-    echo "\033[${color}m$2"; tput sgr0
+    echo -e "\033[${color}m$2"; tput sgr0
 }
 
 header() {
