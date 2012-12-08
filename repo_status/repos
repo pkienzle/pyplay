@@ -8,7 +8,7 @@
 ROOT="$(cd "${1:-.}";pwd)"
 #echo $ROOT
 
-function color_output {
+color_output() {
     case $1 in
         k|black)   color=30 ;;
         r|red)     color=31 ;;
@@ -22,7 +22,7 @@ function color_output {
     echo "\033[${color}m$2"; tput sgr0
 }
 
-function header {
+header() {
     color_output green "==> $2 status $1"
 }
 
@@ -32,7 +32,7 @@ color_output magenta "repository status for $ROOT"
 for dir in $ROOT/*; do
     if test -d "$dir/.git"; then
         header "$dir" git
-        (cd "$dir" && git status -s)
+        (cd "$dir" && git status -sb)
     elif test -d "$dir/.hg"; then
         header "$dir" hg
         (cd "$dir" && hg status)
