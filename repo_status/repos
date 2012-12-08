@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# Show the status of all repos in the specified directory.
+# 
+# usage: repos [path]
+#
+
+ROOT="$(cd "${1:-.}";pwd)"
+#echo $ROOT
+
+function color_output {
+    case $1 in
+        k|black)   color=30 ;;
+        r|red)     color=31 ;;
+        g|green)   color=32 ;;
+        y|yellow)  color=33 ;;
+        b|blue)    color=34 ;;
+        m|magenta) color=35 ;;
+        c|cyan)    color=36 ;;
+        w|white)   color=37 ;;
+    esac
+    echo "\033[${color}m$2"; tput sgr0
+}
+
+function header {
+    color_output green "==> $2 status $1"
+}
+
+echo
+color_output magenta "repository status for $ROOT"
+
+for dir in $ROOT/*; do
+    if test -d "$dir/.git"; then
+        header "$dir" git
+        (cd "$dir" && git status -s)
+    elif test -d "$dir/.hg"; then
+        header "$dir" hg
+        (cd "$dir" && hg status)
+    elif test -d "$dir/.svn"; then
+        header "$dir" svn
+        (cd "$dir" && svn status)
+    elif test -d "$dir/CVS"; then
+        header "$dir" cvs
+        (cd "$dir" && cvs status)
+    else
+        color_output red "====== $dir is not a repository ======"
+    fi
+done
