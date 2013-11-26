@@ -4,19 +4,19 @@ some math experiments.
 Math
 ====
 
-`empirical_ci <pyplay/blob/master/empirical_ci>`_
+`empirical_ci <empirical_ci>`_
 
     determine how many samples we need to compute 1-sigma
 
 Python
 ======
 
-`excutil <pyplay/blob/master/excutil.py>`_
+`excutil <excutil.py>`_
 
     annotate a python exception, for example, by adding details of
     what operation was being performed when the exception occurred
 
-`inline_tests <pyplay/tree/master/inline_tests>`_
+`inline_tests <inline_tests>`_
 
     does nosetest allow relative imports?
 
