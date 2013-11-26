@@ -11,6 +11,11 @@ Math
 Python
 ======
 
+`excutil <pyplay/tree/master/excutil.py>`_
+
+    annotate a python exception, for example, by adding details of
+    what operation was being performed when the exception occurred
+
 `inline_tests <pyplay/tree/master/inline_tests>`_
 
     does nosetest allow relative imports?
