@@ -4,14 +4,14 @@ some math experiments.
 Math
 ====
 
-`empirical_ci <pyplay/tree/master/empirical_ci>`_
+`empirical_ci <pyplay/blob/master/empirical_ci>`_
 
     determine how many samples we need to compute 1-sigma
 
 Python
 ======
 
-`excutil <pyplay/tree/master/excutil.py>`_
+`excutil <pyplay/blob/master/excutil.py>`_
 
     annotate a python exception, for example, by adding details of
     what operation was being performed when the exception occurred
@@ -47,7 +47,7 @@ Python
     fn is a function defined within the module.  This meets my immediate needs,
     so I didn't explore any other solutions.
 
-byline.py
+`byline.py <pyplay/blob/master/byline.py>`_
 
     Implement line buffering on streams that don't have it.  Turns out I don't
     need this code because the problem I was trying to solve (BZ2 files cutting
