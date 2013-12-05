@@ -8,6 +8,10 @@ Math
 
     determine how many samples we need to compute 1-sigma
 
+`poisson_peak`_
+
+    peak fitting with gaussian vs. poisson statistics
+
 Python
 ======
 
