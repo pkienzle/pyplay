@@ -9,12 +9,12 @@ we get away with a some sort of corrected normal approximation?
 Test
 ====
 
-The program `testdy`_ runs through peak fitting trials using a simulated
+The program `<testdy>`_ runs through peak fitting trials using a simulated
 gaussian peak in low background.  For each simulation, the data were
 fitted using poisson statistics, and for gaussian statistics with various
 estimates of y,dy for each fit.  The proposed correction comes from:
 
-  `http://www-cdf.fnal.gov/physics/statistics/notes/pois_eb.txt`_
+  `<http://www-cdf.fnal.gov/physics/statistics/notes/pois_eb.txt>`_
 
 The conditions were:
 
