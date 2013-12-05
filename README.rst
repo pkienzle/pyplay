@@ -1,6 +1,8 @@
 PyPlay is a set of small tests, mostly of features of python, but it also includes
 some math experiments.
 
+Note: use `rest2html <https://raw.github.com/github/markup/master/lib/github/commands/rest2html>`_ to check README.rst before checkin
+
 Math
 ====
 
