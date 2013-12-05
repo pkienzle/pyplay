@@ -46,7 +46,7 @@ Results
 1) 20% zeros shows a definite underestimation of background levels, even 
 with the correction.  
 
-    $ ./testdy 100,0.4,0.1,1
+Command: $ ./testdy 100,0.4,0.1,1
 
  ===========  ============ ============ ============ ============ ===========
  condition    A            mu           sigma        C            chisq        
@@ -63,7 +63,7 @@ with the correction.
 
 2) fewer than 20% <= 2
 
-    $ ./testdy 100,0.4,0.1,4
+Command: $ ./testdy 100,0.4,0.1,4
 
  ===========  ============ ============ ============ ============ ===========
  condition    A            mu           sigma        C            chisq        
@@ -79,7 +79,7 @@ with the correction.
 
 3) mostly n > 7
 
-    $ ./testdy 100,0.4,0.1,10
+Command: $ ./testdy 100,0.4,0.1,10
 
  ===========  ============ ============ ============ ============ ===========
  condition    A            mu           sigma        C            chisq        
