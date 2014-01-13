@@ -8,6 +8,10 @@ Math
 
     determine how many samples we need to compute 1-sigma
 
+`BIC <bic>`_
+
+    test distribution of chisq values for nested models with BIC
+
 Python
 ======
 
