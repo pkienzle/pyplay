@@ -1,12 +1,18 @@
 PyPlay is a set of small tests, mostly of features of python, but it also includes
 some math experiments.
 
+Note: use `rest2html <https://raw.github.com/github/markup/master/lib/github/commands/rest2html>`_ to check README.rst before checkin
+
 Math
 ====
 
 `empirical_ci <empirical_ci>`_
 
     determine how many samples we need to compute 1-sigma
+
+`<poisson_peak>`_
+
+    peak fitting with gaussian vs. poisson statistics
 
 `BIC <bic>`_
 
