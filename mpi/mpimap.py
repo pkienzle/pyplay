@@ -53,6 +53,67 @@ def mpimap(f, a, root=0, inplace=False):
     comm.Barrier()
     return result
 
+def queuemap(f, a, root=0, inplace=False):
+    WORK_TAG=1
+    DONE_TAG=2
+    if comm.rank == root:
+        # TODO: let master do work so small cluster performance doesn't suffer
+        npoints = a.size
+        nworkers = comm.size - 1
+        result = numpy.empty(npoints, dtype='d')
+        worker_id = list(range(1,nworkers+1))
+        active_point = {}
+        ntail = min(npoints,nworkers)
+        # block spread initial values across workers
+        requests = []
+        for i in range(ntail):
+            worker = worker_id[i]
+            active_point[worker] = i
+            #print("root: sending %d to %d"%(i,worker))
+            requests.append(comm.Isend(a[i:i+1], dest=worker, tag=WORK_TAG))
+        for r in requests: r.Wait()
+        # recv/send until no more work
+        for i in range(ntail,npoints):
+            status = MPI.Status()
+            comm.Probe(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
+            worker = status.source
+            pt = active_point[worker]
+            #print("root: receiving %d from %d and sending %d"%(pt,worker,i))
+            comm.Recv(result[pt:pt+1], source=worker, tag=status.Get_tag())
+            active_point[worker] = i
+            comm.Send(a[i:i+1], dest=worker, tag=WORK_TAG)
+        # wait for outstanding work
+        for _ in range(ntail):
+            status = MPI.Status()
+            comm.Probe(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
+            worker = status.source
+            pt = active_point[worker]
+            #print("root: receiving %d from %d and not sending any more"%(pt,worker))
+            comm.Recv(result[pt:pt+1], source=worker, tag=status.tag)
+        # block tell workers they are done by sending a bad point
+        stop = numpy.zeros(1, 'd')
+        requests = []
+        for worker in worker_id:
+            #print("root: let worker %d know we are done"%(worker,))
+            requests.append(comm.Isend(stop, worker, tag=DONE_TAG))
+        for r in requests: r.Wait()
+        return result
+
+    else:
+        # loop until no more work
+        point = numpy.empty(1, dtype='d')
+        while True:
+            status = MPI.Status()
+            comm.Probe(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
+            comm.Recv(point, source=root, tag=status.tag)
+            if status.tag==DONE_TAG: break
+            #print("%d: receiving point %g"%(comm.rank,point[0]))
+            result = f(point[0])
+            #print("%d: sending result %g"%(comm.rank,result))
+            comm.Send(result, dest=root)
+
+        return None   # return value is ignored
+
 def expensive(x):
     import random
     #t = time.time()
@@ -63,13 +124,28 @@ def expensive(x):
     A = [sum(vi*vj for vi in A) for vj in A]
     return x
 
+def random_sleep(x):
+    print("%d: sleep %d"%(comm.rank,x))
+    time.sleep(x)
+    return x
+
 def main():
     if comm.rank == 0: print "pool size",comm.size
-    a = numpy.arange(128,dtype='d') if comm.rank == 0 else None
+    a = None
+    if comm.rank == 0:
+        numpy.random.seed(20)
+        a = numpy.asarray(numpy.random.poisson(1.0,size=20),'d')
+        #a = numpy.arange(20,dtype='d')
+        #a = numpy.arange(2048,dtype='d')
     #fn = lambda x:x*x
-    fn = expensive
-    result = mpimap(fn,a) if comm.size > 1 else numpy.array(map(fn,a))
-    if comm.rank == 0: print result
+    #fn = expensive
+    fn = random_sleep
+    if comm.size > 1:
+        #result = mpimap(fn,a)
+        result = queuemap(fn,a)
+    else:
+        result = numpy.array(map(fn,a))
+    if comm.rank == 0: print sum(result)
 
 if __name__ == "__main__":
     main()
