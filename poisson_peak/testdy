@@ -1,0 +1,245 @@
+#!/usr/bin/env python
+"""
+A little utility for running through a bunch of NCNR fpx files and fit
+the peaks.
+
+Example usage::
+
+    $ ln -s /net/charlotte/var/ftp/pub/ncnrdata ~/ncnrdata
+    $ ./fitfpx `find ~/ncnrdata/ng1/201001 -name "fpx*"`
+    $ ./fitfpx `find ~/ncnrdata/bt7/201001 -name "fpx*"`
+
+An example of a split peak::
+
+    ~/ncnrdata/bt7/201001/14693/data/fpx79639.bt7
+"""
+
+import sys
+import time
+import traceback
+
+import numpy as np
+from numpy import (argmax, argmin, argsort, nonzero, exp, sqrt, log, cos,
+     linspace, clip, array, maximum, loadtxt, pi, inf, ones_like, mean, std)
+from numpy.random import poisson
+from optimize import fmin
+#from scipy.stats import chi2 as chisq_dist
+import numpy
+#numpy.seterr(all="raise")
+from formatnum import format_uncertainty as fmt
+
+
+_LOGFACTORIAL = np.array([log(np.prod(np.arange(1.,k+1))) for k in range(21)])
+def logfactorial(n):
+    result = np.empty(n.shape, dtype='double')
+    idx = (n<=20)
+    result[idx] = _LOGFACTORIAL[np.asarray(n[idx],'int32')]
+    n = n[~idx]
+    result[~idx] = n*log(n) - n + log(n*(1+4*n*(1+2*n)))/6 + log(pi)/2
+    return result
+
+def medfilt(x,n):
+    x = numpy.asarray(x)
+    if not n%2:
+        raise ValueError("window width must be odd")
+    if len(x) < n:
+        return numpy.ones_like(x)*numpy.median(x)
+    w = (n-1)/2
+    out = numpy.empty_like(x)
+    for i in range(w):
+        out[i] = numpy.median(x[:w+1+i])
+    for i in range(w,len(x)-w):
+        out[i] = numpy.median(x[i-w:w+1+i])
+    for i in range(len(x)-w,len(x)):
+        out[i] = numpy.median(x[i-w:])
+    return out        
+
+def poisson_stat(fn,p,x,y,penaltyfn):
+    theory = fn(x,*p)
+    penalty = penaltyfn(x,*p)
+    if penalty>0: penalty += 1e6
+    if (theory<=0).any(): return 1e308
+    return -sum( y*log(theory) - theory - logfactorial(y) ) + penalty
+def chisq_stat(fn,p,x,y,dy,penaltyfn):
+    theory = fn(x,*p)
+    penalty = penaltyfn(x,*p)
+    if penalty>0: penalty += 1e6
+    return sum(((theory-y)/dy)**2) + penalty
+def chisq_test(stat, df, p=0.05):
+    """return true if chisq higher or lower than expected"""
+    #phat = chisq_dist.cdf(stat, df)
+    #return not (phat <= 1-p)
+    #return not (p/2 <= phat <= 1-p/2)
+    
+def gauss_pars(x,y):
+    idx = argmax(y)
+    C = 0.5*(y[0]+y[-1])
+    mu, A = x[idx], y[idx]-C
+    idx, = nonzero(y >= 0.5*A+C)
+    sigma = 0.5*(x[idx[-1]] - x[idx[0]])/sqrt(log(256))
+    if sigma == 0: sigma = x[1]-x[0]
+    return A, mu, sigma, C
+def gauss(x,A,mu,sigma,C):
+    return C + A * exp(-0.5*((x-mu)/sigma)**2)
+def gauss_penalty(x,A,mu,sigma,C):
+    # Convert min/max FWHM into min/max sigma
+    max_sigma = abs(x[-1]-x[0])/2.35
+    min_sigma = 2*abs(x[1]-x[0])/2.35
+    return (clip(sigma,min_sigma,max_sigma)-sigma)**2 + (C<0)*C**2 + (clip(mu,x[0],x[-1])-mu)**2 + (A<0)*A**2
+
+def cosfn(x,A,center,wavelength,offset):
+    """
+    We will use the following form of cosine::
+    
+        y = offset + A + A*cos(2*pi*(x-center)/wavelength - pi)
+    
+    This sets the offset to the minimum, the center to the x value
+    at the minimum, and the amplitude to the (maximum - minimum)/2.  
+    This only leaves the width to guess, and and it is easy to try a
+    a fit to half the width and double amplitude if the initial guess
+    fails.
+    
+    The traditional form::
+    
+      y = A*cos(2*pi*f + phi) + DC_offset
+    
+    is therefore::
+    
+      A = A
+      f = 1/wavelength
+      phi = center/wavelength - pi
+      DC_offset = offset + A
+    """
+    # Assume we have at least 1/4 wave and at most 4 waves
+    dx = (x[-1]-x[0])
+    wavelength = 2*max(dx/8.,min(2*dx,wavelength))
+    return offset + A + A*cos(2*pi*(x-center)/wavelength - pi)
+
+
+def cos_pars(x,y):
+    """
+    Guess cosine parameters from measured x,y.
+    """
+    #from scipy.signal import medfilt
+    y = medfilt(y,3)
+    ymax,ymin = y.max(), y.min()
+    offset = ymin
+    amplitude = (ymax-ymin)/2
+    center = x[argmin(y)]
+
+    # Find first peak by skipping to the first point well above zero then
+    # finding the maximum until the next point well below zero.
+    y = (y-offset)/amplitude - 1
+    idx = 0
+    while idx < len(y)-1 and y[idx] < 0.25:
+        idx += 1
+    peak_x, peak_y = x[idx], y[idx]
+    while idx < len(y) and y[idx] >= -0.25:
+        if y[idx] > peak_y:
+            peak_x, peak_y = x[idx], y[idx]
+        idx += 1
+
+    # Find first valley by skipping to the first point well below zero then
+    # finding the minimum until the next point well above zero.
+    idx = 0
+    while idx < len(y)-1 and y[idx] > -0.25:
+        idx += 1
+    valley_x, valley_y = x[idx], y[idx]
+    while idx < len(y) and y[idx] <= 0.25:
+        if y[idx] < valley_y:
+            valley_x, valley_y = x[idx], y[idx]
+        idx += 1
+
+    # Wavelength is twice the peak to valley distance.
+    wavelength = 2*abs(peak_x - valley_x)
+
+    return amplitude, center, wavelength, offset
+
+def cos_penalty(x,A,center,wavelength,offset):
+    return (clip(wavelength, abs(x[1]-x[0]),8*abs(x[-1]-x[0]))-wavelength)**2
+
+def quad_pars(x,y):
+    # Note: fails if C != 0
+    idx = argmax(y)
+    C = 0
+    mu, A = x[idx], y[idx]-C
+    if x[0] - x[idx] <= x[idx]-x[-1]:
+        px,py = x[0],y[0]
+    else:
+        px,py = x[-1],y[-1]
+    sigma = sqrt( (px-mu)**2 / (1-(py-C)/A) / log(16) )
+    return A, mu, sigma, C
+def quad(x,A,mu,sigma,C=0):
+    return maximum(0,A * ( 1 - (x-mu)**2/sigma**2/log(16) )) + C
+def quad_penalty(x,A,mu,sigma,C=0):
+    return (clip(mu,x[0],x[-1])-mu)**2
+
+def fit(fitness, p):
+    p1,fp1,_N,_calls,_warn = fmin(fitness, p, 
+                                  disp=0, full_output=1, retall=0)
+    p2,fp2,_N,_calls,_warn = fmin(fitness,     
+                                  [p[0]+p[3], p[1], p[2], 0],
+                                  disp=0, full_output=1, retall=0)
+    p3,fp3,_N,_calls,_warn = fmin(fitness,     
+                                  [p[0]+p[3], p[1], 2*p[2], 0],
+                                  disp=0, full_output=1, retall=0)
+    # For cos models, try halving the frequency and doubling amplitude
+    p4,fp4,_N,_calls,_warn = fmin(fitness,     
+                                  [0.5*p[0], p[1], 0.5*p[2], p[3]],
+                                  disp=0, full_output=1, retall=0)
+    idx = argmin([fp1,fp2,fp3,fp4])
+    return [p1,p2,p3,p4][idx]
+
+FORMS={'G': gauss, 'Q': quad, 'C': cosfn}
+PENALTY={'G': gauss_penalty, 'Q': quad_penalty, 'C': cos_penalty}
+FORMS_PAR={'G': gauss_pars, 'Q': quad_pars, 'C': cos_pars}
+def peakfit(x,y,dy,cost="G",form="G"):
+    fn = FORMS[form]
+    pars = FORMS_PAR[form]
+    penaltyfn = PENALTY[form]
+    Gcost = lambda p: chisq_stat(fn,p,x,y,dy,penaltyfn)
+    Pcost = lambda p: poisson_stat(fn,p,x,y,penaltyfn)
+    fitness = Pcost if cost == 'P' else Gcost
+    p = fit(fitness, pars(x,y))
+    xth = linspace(x[0],x[-1],400)
+    yth = fn(xth,*p)
+    dof = len(x)-len(p)
+    return  p,xth,yth,Gcost(p),dof
+
+def main():
+    form = "G"
+    G = FORMS[form]
+    x = linspace(0,1,30)
+    A,mu,sigma,C = [float(p) for p in sys.argv[1].split(',')]
+    if len(sys.argv) > 2:
+        A2,mu2,sigma2,C2 = [float(p) for p in sys.argv[1].split(',')]
+        rate = lambda: G(x,A,mu,sigma,C) + G(x,A2,mu2,sigma2,C2)
+    else: 
+        rate = lambda: G(x,A,mu,sigma,C)
+
+    stats = { 'conventional':[], 'correct0':[], 'correct1':[], 'correct2':[], 'correctall':[], 'poisson':[] }
+    for trial in range(10):
+        y = poisson(rate()) 
+        print "trial %3d #0: %d, #1: %d, #2: %d, #>2: %d"%(trial,sum(y==0),sum(y==1),sum(y==2),sum(y>2))
+        p,_x,_y,chisq,_dof = peakfit(x,y,sqrt(y)+(y==0),cost='P',form=form)
+        stats['poisson'].append((p,chisq))
+        p,_x,_y,chisq,_dof = peakfit(x,y,sqrt(y)+(y==0),cost='G',form=form)
+        stats['conventional'].append((p,chisq))
+        shift = 0.5
+        p,_x,_y,chisq,_dof = peakfit(x,y+shift,sqrt(y+shift**2),cost='G',form=form)
+        stats['correctall'].append((p,chisq))
+        for n in range(3):
+            p,_x,_y,chisq,_dof = peakfit(x,y+(y<=n)*shift,(y>n)*sqrt(y)+(y<=n)*sqrt(y+shift**2),cost='G',form=form)
+            stats['correct'+str(n)].append((p,chisq))
+
+    print ("%-12s "*6)%('condition','A','mu','sigma','C','chisq')
+    print ("%-12s "*6)%('target',A,mu,sigma,C,'')
+    for k,v in sorted(stats.items()):
+        pars,chisq = zip(*v)
+        pars = array(pars) 
+        s = [fmt(mean(pars[:,n]),std(pars[:,n])) for n in range(4)]
+        s = [k]+s+[fmt(mean(chisq),std(chisq))]
+        print ("%-12s "*6) % tuple(s)
+
+if __name__ == "__main__":
+    main()
