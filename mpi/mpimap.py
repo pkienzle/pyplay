@@ -51,21 +51,24 @@ def mpimap(f, a, root=0, inplace=False):
                  (result,(size,offset),mpitype), 
                  root=root)
     comm.Barrier()
-    return result if comm.rank==root else None
+    return result
 
 def expensive(x):
+    import random
     #t = time.time()
     #while time.time() < t+1: pass
-    A = numpy.random.rand(1000,1000)
-    B = numpy.dot(A,A)
+    #A = numpy.random.rand(1000,1000)
+    #for _ in range(2): B = numpy.dot(A,A)
+    A = [random.random() for _ in range(1000)]
+    A = [sum(vi*vj for vi in A) for vj in A]
     return x
 
 def main():
     if comm.rank == 0: print "pool size",comm.size
-    a = numpy.arange(31,dtype='d') if comm.rank == 0 else None
-    result = mpimap(lambda x:x*x, a)
-    #result = mpimap(expensive, a)
-    #result = map(expensive, a)
+    a = numpy.arange(128,dtype='d') if comm.rank == 0 else None
+    #fn = lambda x:x*x
+    fn = expensive
+    result = mpimap(fn,a) if comm.size > 1 else numpy.array(map(fn,a))
     if comm.rank == 0: print result
 
 if __name__ == "__main__":
