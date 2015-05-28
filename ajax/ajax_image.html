@@ -1,0 +1,43 @@
+<html>
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+function run_query() {
+    //console.log("posting to URL");
+    $.ajax({
+	type: "GET",
+	url: "/cgi-bin/ajax_image.py",
+	dataType: "json",
+	data: {
+	    name: $('input:text[id=id-name]').val()
+        },	    
+	//async: false,
+        //complete: function (xhr, status) { console.log("xhr",xhr); },
+	success: process_response
+    });
+    //console.log("done post");
+}
+function process_response(data) {
+    console.log("response",data);
+    //$("<hr/>"+data).prependTo('#results'); 
+    $("#results").html("<hr/><p>Hello, " + data.name + "!</p><img src=\""+data.image+"\" />");
+    //console.log("done response");
+}
+
+$(document).ready(function () {
+    //console.log("register button");
+    $("#id-form").submit(function (event) { event.preventDefault(); });
+    $("#id-process-button").click(run_query);
+    //console.log("app ready");
+});
+
+</script>
+</head>
+<body>
+<form id="id-form" method="post">
+Name: <input id="id-name" type="text" size="20" value="name..." />
+<input type="submit" id="id-process-button" name="form" value="Process" />
+</form>
+<div id="results" />
+</body>
+</html>

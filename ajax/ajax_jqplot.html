@@ -1,0 +1,50 @@
+<html>
+<head>
+<title>Form with interactive plots</title>
+<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="/jqplot/excanvas.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/jqplot/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/jqplot/jquery.jqplot.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/jqplot/jquery.jqplot.css" />
+<script type="text/javascript">
+function run_query() {
+    //console.log("posting to URL");
+    $.ajax({
+	type: "POST",
+	url: "/cgi-bin/ajax_jqplot.py",
+	dataType: "json",
+	data: {
+	    name: $('input:text[id=id-name]').val()
+        },	    
+	//async: false,
+        //complete: function (xhr, status) { console.log("xhr",xhr); },
+	success: process_response
+    });
+    //console.log("done post");
+}
+function process_response(data) {
+    console.log("response",data);
+    //$("<hr/>"+data).prependTo('#results'); 
+    $("#results").html("<hr/><p>Hello, " + data.name + "!</p>");
+    //$("#results").empty().append("<hr/><p>Hello, " + data.name + "!</p>");
+    $.jqplot('chartdiv', [data.chart.data], data.chart.options);
+    //console.log("done response");
+}
+
+$(document).ready(function () {
+    //console.log("register button");
+    $("#id-form").submit(function (event) { event.preventDefault(); });
+    $("#id-process-button").click(run_query);
+    //console.log("app ready");
+});
+
+</script>
+</head>
+<body>
+<form id="id-form" method="post">
+Name: <input id="id-name" type="text" size="20" value="name..." />
+<input type="submit" id="id-process-button" name="form" value="Process" />
+</form>
+<div id="results"></div>
+<div id="chartdiv" style="height:400px;width:300px; "></div>
+</body>
+</html>

@@ -75,3 +75,9 @@ WxPython
 
     interactors on matplotlib graphs
 
+Web
+===
+
+`<ajax>`_
+
+    play with simple web applications and python cgi
