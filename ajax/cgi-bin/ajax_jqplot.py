@@ -16,6 +16,8 @@ def generate_json(result):
 
 def process_form():
     form = cgi.FieldStorage()
+    # Sanitize input to prevent XSS injection
+    name = cgi.escape(form.getfirst("name"))
     #print >>sys.stderr,"Form",form
     chart = {
         "data": [[1,1],[2,2],[3,1]],
@@ -25,7 +27,7 @@ def process_form():
             "series": [{"color": "#5FAB78"}],
             }
         }
-    generate_json({'name': form["name"].value, 'chart': chart})
+    generate_json({'name': name, 'chart': chart})
 
 if __name__ == "__main__":
     #print >>sys.stderr,"Start"

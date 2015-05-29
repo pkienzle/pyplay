@@ -17,13 +17,15 @@ def generate_json(result):
 def process_form():
     form = cgi.FieldStorage()
     #print >>sys.stderr,"Form",form
+    # Sanitize input to prevent XSS injection
+    name = cgi.escape(form.getfirst("name"))
     timestamp = str("%.3f"%time.time())
     if not os.path.exists('images'):
         os.mkdir('images')
     filename = "images/I%s.png"%timestamp
     status = os.system("cp test.png %s"%filename)
     #print >>sys.stderr,"Status",status,os.getcwd()
-    generate_json({'name': form["name"].value, 'image': filename})
+    generate_json({'name': name, 'image': filename})
 
 if __name__ == "__main__":
     #print >>sys.stderr,"Start"

@@ -15,7 +15,9 @@ def generate_json(result):
 def process_form():
     form = cgi.FieldStorage()
     #print >>sys.stderr,"Form",form
-    generate_json({'name': form["name"].value})
+    # Sanitize input to prevent XSS injection
+    name = cgi.escape(form.getfirst("name"))
+    generate_json({'name': name})
 
 if __name__ == "__main__":
     #print >>sys.stderr,"Start"

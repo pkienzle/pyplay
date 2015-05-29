@@ -1,9 +1,50 @@
 <html>
-<title>Simple form</title>
+<title>Simple web apps in python</title>
 <body>
-<form action="/cgi-bin/hello.py">
-Name: <input type="text" name="name" size="20" value="name..." />
-<input type="submit" name="form" value="Process" />
-</form>
+<h3>Exploration of simple web applications.</h3>
+<p>
+Here is a series of increasingly sophisticated web applications to
+demonstrate how to write a computational web service in python:
+<ul>
+<li><a href="direct.html">direct.html</a> is a direct cgi callback which
+responds with a new html page containing the results.
+Note that the returned page is different from the current page, and
+further queries will not be possible without returning to the original
+form.  The back button will ask to resubmit the form, which is unpleasant,
+and so a forward link back to the original form is provided on the page.
+This fills up the browser history, so while simple, it does not provide
+a good user experience.
+</li>
+
+<li><a href="ajax.html">ajax.html</a> uses an AJAX request to retrieve some
+an html response which gets appended to the page, making a single page
+web application.
+</li>
+
+<li><a href="ajax_json.html">ajax_json.html</a> returns a JSON datastructure
+rather than HTML; this can be more useful for computer processing of
+results from the web service beyond just showing them to the user in the
+browser.
+</li>
+
+<li><a href="ajax_image.html">ajax_image.html</a> creates a PNG file on
+the server and includes a link to it in the results.
+</li>
+
+<li><a href="ajax_jqplot.html">ajax_jqplot.html</a> uses jqplot to plot
+the results in the browser so that the png file doesn't need to be
+managed on the server, and so that the user can interact with the
+graph without having to call back to the server to replot the data
+each time.  Having the data in JSON is also much more useful for
+other applications that want to use the web service as a computational
+backend.
+</li>
+
+</ul>
+
+</p>
+<p>
+See source on <a href="http://github.com/pkienzle/pyplay/tree/master/ajax">github</a>.
+</p>
 </body>
 </html>
