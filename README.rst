@@ -81,3 +81,8 @@ Web
 `<ajax>`_
 
     play with simple web applications and python cgi
+
+`<webkit.py>`_
+
+    Use PyQt4 with webkit as an app ui.  Demonstrates calling python from
+    javascript and javascript from python.
