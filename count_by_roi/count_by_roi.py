@@ -10,16 +10,15 @@ def simulate(monitor_rate=1000., detector_rate=1., cutoff_time=300, cutoff_count
     results = []
     for k in range(cycles):
         arrival_times = np.cumsum(random.exponential(scale=beta, size=cutoff_counts))
-        if arrival_times[-1] > cutoff_time:
-
+        if arrival_times[-1] >= cutoff_time:
             detector_counts = np.searchsorted(arrival_times, cutoff_time) + correction
             count_time = cutoff_time
         else:
             detector_counts = cutoff_counts
             count_time = arrival_times[-1]
-        monitor_counts = random.poisson(monitor_rate*count_time)
+        monitor_counts = random.poisson(monitor_rate*count_time)+1
         counts_per_second = detector_counts / count_time
-        counts_per_monitor = detector_counts / (monitor_counts + (monitor_counts==0))
+        counts_per_monitor = detector_counts / (monitor_counts + (monitor_counts == 0))
         #if k < 100: print("%2d %.1f %.3f"%(detector_counts, count_time, counts_per_second))
         results.append((counts_per_second, counts_per_monitor))
     counts_per_second, counts_per_monitor = [np.array(v) for v in zip(*results)]
