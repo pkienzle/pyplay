@@ -18,6 +18,10 @@ Math
 
     test distribution of chisq values for nested models with BIC
 
+`<count_by_roi>`_
+
+    counting until time vs counting until count gives different rate estimates
+
 Python
 ======
 
@@ -43,13 +47,13 @@ Python
     Explore abstract base class support, checking that missing subclass methods
     get reported and method signatures on the subclass match the base class.  It
     turns out that abc's do not check method signatures, so pyplay/abc contains
-    the module `quack <abc/quack.py>`_ which does the work of 
+    the module `quack <abc/quack.py>`_ which does the work of
     abc as well as checking method signatures.
 
 `<module_attr>`_
 
     Show that globals are defined by first assignment to the global, not by a
-    module level global statement.  
+    module level global statement.
 
 `<modpath>`_
 
