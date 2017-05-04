@@ -76,6 +76,10 @@ by time and by count::
     subplot(121)
     plt.hist(10.5/np.sum(np.random.exponential(0.1, size=(10,10000)), axis=0), bins=arange(0.5,30.5,1.))
 
+.. image:: time_vs_count_rates.png
+    :alt: Plot of observed count rates given a fixed time vs fixed counts cutoff
+    :align: left
+
 This is not quite the correct problem.  We are showing the probability of
 observed rate given a fixed true rate.  Rather than plotting observed rates
 for a give true rate, we should be plotting the true rate for given observed
