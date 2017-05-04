@@ -9,7 +9,7 @@ When performing neutron scattering experiments the primary observable is the
 count rate for the given experimental condition.  The rate is estimated by
 counting the scattered neturons for a certain amount of time and dividing by
 the counting time. Since the incident neutron beam is assumed to be generated
-by a Poisson process, `https://en.wikipedia.org/wiki/Poisson_distribution`_,
+by a `Poisson process <https://en.wikipedia.org/wiki/Poisson_distribution>`_,
 the variance in the number of counts for a given count rate is equal to the
 number of counts, and relative uncertainty in the counts goes down
 as sqrt(N). The uncertainty in the rate is sqrt(N)/T for counting time T. To
