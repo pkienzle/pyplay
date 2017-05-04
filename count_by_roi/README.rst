@@ -11,10 +11,26 @@ limited measurements  (see attached).
 The first two figures are the easy cases where you are neither
 count nor time limited.  The double peak in the third figure
 for time-and-count limited measuremenst is reproducible, and
-is not an artifact of binning or small n or anything else.  You can
-compensate for this by shifting the rate peak slightly for the count
+is not an artifact of binning or small n or anything else.
+
+.. image:: count_limited.png
+    :alt: Plot of observed count rates when counts is the cutoff
+    :align: left
+
+.. image:: time_limited.png
+    :alt: Plot of observed count rates when time is the cutoff
+    :align: left
+
+.. image:: time_or_count_limited.png
+    :alt: Plot of observed count rates for matched counts and time
+    :align: left
+
+You can compensate for this by shifting the rate peak slightly for the count
 by time case by adding 0.5 to the estimated counts for the interval.
-This is shown in the fourth figure.
+
+.. image:: time_or_count_with_correction.png
+    :alt: Plot of observed count rates for matched condition with correction
+    :align: left
 
 This issue is that the distribution of rates estimated from counts
 by time vs counts by ROI are different, and they lead to problems
@@ -22,6 +38,10 @@ at the crossover, where some counts are limited by rate and others
 are limited by time.  You can see an exaggerated example of this
 in the final figure, where it is clear that the shape is different
 and the peak is shifted.
+
+.. image:: time_vs_count_rates.png
+    :alt: Plot of observed count rates given a fixed time vs fixed counts cutoff
+    :align: left
 
 Is this hack good enough, or do we need an analytical justification
 for the choice of 0.5?
