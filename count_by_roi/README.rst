@@ -76,6 +76,14 @@ and the peak is shifted.
     :alt: Plot of observed count rates given a fixed time vs fixed counts cutoff
     :align: left
 
+This is not quite the correct problem.  We are showing the probability of
+observed rate given a fixed true rate.  Rather than plotting observed rates
+for a give true rate, we should be plotting the true rate for given observed
+rate.  This is a little harder to do, and is a project for another day.
+
+Requiring adding 0.5 to all observed counts by time (the usual case) in order
+to make this artifact disappear is not acceptable without further analysis.
+
 Code used to produce the plots::
 
     n = 100
@@ -102,18 +110,6 @@ by time and by count::
     # And maybe overplot the "corrected" rate distribution
     subplot(121)
     plt.hist(10.5/np.sum(np.random.exponential(0.1, size=(10,10000)), axis=0), bins=arange(0.5,30.5,1.))
-
-.. image:: time_vs_count_rates.png
-    :alt: Plot of observed count rates given a fixed time vs fixed counts cutoff
-    :align: left
-
-This is not quite the correct problem.  We are showing the probability of
-observed rate given a fixed true rate.  Rather than plotting observed rates
-for a give true rate, we should be plotting the true rate for given observed
-rate.  This is a little harder to do, and is a project for another day.
-
-Requiring adding 0.5 to all observed counts by time (the usual case) in order
-to make this artifact disappear is not acceptable without further analysis.
 
 Manifest
 ========
