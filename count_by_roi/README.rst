@@ -112,11 +112,6 @@ over enough measurements, but the underlying distribution is again wonky.
     :alt: Plot of observed count rates by parts (add a whole interval for fixed counts)
     :align: left
 
-We are not quite solving the correct problem.  We are showing the probability of
-observed rate given a fixed true rate.  Rather than plotting observed rates
-for a give true rate, we should be plotting the true rate for given observed
-rate.  This is a little harder to do, and is a project for another day.
-
 Requiring adding 0.5 to all observed counts by time (the usual case) in order
 to make this artifact disappear is not acceptable without further analysis.
 Adjusting the fixed count case will be less controversial.  There usual
@@ -124,6 +119,11 @@ approach would be to select the maximum likelihood (the "uncorrected" case)
 but this is clearly bad for the crossover.  Correcting by one interval to get
 the correct expected value is another favourite (the "overcorrected" case), 
 but again the crossover is bad.  Adding 0.5 feels like a good compromise.
+
+We are not quite solving the correct problem.  We are showing the probability of
+observed rate given a fixed true rate.  Rather than plotting observed rates
+for a give true rate, we should be plotting the true rate for given observed
+rate.  This is a little harder to do, and is a project for another day.
 
 Code used to produce the plots::
 
