@@ -159,15 +159,15 @@ Code used to examine the crossover case::
     cycles = 500000
 
     # count or time cutoff with correction
-    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure,
+    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure=True,
                           detector_rate=n/T, correction=0.0)
     # modify code to select count correction
-    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure,
+    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure=True,
                           detector_rate=n/T, correction=0.5)
     # modify code to select time correction
-    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure,
+    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure=True,
                           detector_rate=n/T, correction=0.5)
-    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure,
+    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure=True,
                           detector_rate=n/T, correction=1.0)
 
 
