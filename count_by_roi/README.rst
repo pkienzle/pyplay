@@ -105,13 +105,25 @@ but with an observed mean closer to the true mean.
     :alt: Plot of observed count rates by parts (correct time for fixed counts)
     :align: left
 
-This is not quite the correct problem.  We are showing the probability of
+Overcorrecting time by adding a whole interval averages to the true mean
+over enough measurements, but the underlying distribution is wonky.
+
+.. image:: pure_overcorrected_time.png
+    :alt: Plot of observed count rates by parts (add a whole interval for fixed counts)
+    :align: left
+
+We are not quite solving the correct problem.  We are showing the probability of
 observed rate given a fixed true rate.  Rather than plotting observed rates
 for a give true rate, we should be plotting the true rate for given observed
 rate.  This is a little harder to do, and is a project for another day.
 
 Requiring adding 0.5 to all observed counts by time (the usual case) in order
 to make this artifact disappear is not acceptable without further analysis.
+Adjusting the fixed count case will be less controversial.  There usual
+approach would be to select the maximum likelihood (the "uncorrected" case)
+but this is clearly bad for the crossover.  Correcting by one interval to get
+the correct expected value is another favourite (the "overcorrected" case), 
+but again the crossover is bad.  Adding 0.5 feels like a good compromise.
 
 Code used to produce the plots::
 
@@ -140,6 +152,25 @@ by time and by count::
     subplot(121)
     plt.hist(10.5/np.sum(np.random.exponential(0.1, size=(10,10000)), axis=0), bins=arange(0.5,30.5,1.))
 
+
+Code used to examine the crossover case::
+
+    n, T = 100, 3.
+    cycles = 500000
+
+    # count or time cutoff with correction
+    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure,
+                          detector_rate=n/T, correction=0.0)
+    # modify code to select count correction
+    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure,
+                          detector_rate=n/T, correction=0.5)
+    # modify code to select time correction
+    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure,
+                          detector_rate=n/T, correction=0.5)
+    count_by_roi.simulate(cutoff_counts=n, cutoff_time=T, cycles=cycles, show_pure,
+                          detector_rate=n/T, correction=1.0)
+
+
 Manifest
 ========
 
@@ -161,6 +192,7 @@ time_vs_count_rates.png
     for a true count rate of 10/s.
 
 pure_uncorrected.png, pure_corrected_time.png, pure_corrected_counts.png
+pure_overcorrected_time.png
 
     Observed count rates by parts showing the results for fixed counting
     time, fixed number of counts and joint counts or time.
