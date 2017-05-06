@@ -18,8 +18,8 @@ we reach a given statistical uncertainty and then stop, either because
 sqrt(N)/N is small at large N or because sqrt(N)/T is small at large T.
 That is, we want to stop counting at a fixed T cutoff or a fixed N cutoff.
 
-To simulate the experiment I generated N neutron arrival intervals from the
-exponential distribution, where N was the cutoff count value.  A cumulative
+To simulate the experiment, generate N neutron arrival intervals from the
+exponential distribution, where N is the cutoff count value.  A cumulative
 sum on the intervals gives the arrival time of the kth neutron.  If the
 total time was greater than the cutoff time, then the experiment recorded the
 number of events before the cutoff time over the cutoff time.  If the
@@ -76,6 +76,35 @@ and the peak is shifted.
     :alt: Plot of observed count rates given a fixed time vs fixed counts cutoff
     :align: left
 
+To investigate this further we can look at a comparison of the curves
+with fixed time, with fixed counts and with joint time/counts, whichever
+comes first.  Much like the previous plots, the probability of observing
+x counts per second is plotted, with a line for the expected x.  We also
+record the mean observed rates in the three conditions, which shows that
+each method gives an expected rate well within uncertainty.  
+
+.. image:: pure_uncorrected.png
+    :alt: Plot of observed count rates by parts (uncorrected)
+    :align: left
+
+The above "correction" of adding 0.5 to the observed counts when time
+is the stopping condition shifts the fixed time curve a little to the
+right yielding a slightly higher mean observed rate but a much nicer
+looking distribution.
+
+.. image:: pure_corrected_counts.png
+    :alt: Plot of observed count rates by parts (correct counts for fixed time)
+    :align: left
+
+We can instead "correct" the time when counts is the stopping
+condition, adding 1/2 an interval to the total time, which shifts
+the fixed counts curve to the left.  This yields a similar distribution
+but with an observed mean closer to the true mean.
+
+.. image:: pure_corrected_time.png
+    :alt: Plot of observed count rates by parts (correct time for fixed counts)
+    :align: left
+
 This is not quite the correct problem.  We are showing the probability of
 observed rate given a fixed true rate.  Rather than plotting observed rates
 for a give true rate, we should be plotting the true rate for given observed
@@ -130,3 +159,8 @@ time_vs_count_rates.png
 
     Comparison of probability of individual count rates being observed
     for a true count rate of 10/s.
+
+pure_uncorrected.png, pure_corrected_time.png, pure_corrected_counts.png
+
+    Observed count rates by parts showing the results for fixed counting
+    time, fixed number of counts and joint counts or time.
