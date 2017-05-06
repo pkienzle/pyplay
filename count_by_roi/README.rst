@@ -106,7 +106,7 @@ but with an observed mean closer to the true mean.
     :align: left
 
 Overcorrecting time by adding a whole interval averages to the true mean
-over enough measurements, but the underlying distribution is wonky.
+over enough measurements, but the underlying distribution is again wonky.
 
 .. image:: pure_overcorrected_time.png
     :alt: Plot of observed count rates by parts (add a whole interval for fixed counts)
