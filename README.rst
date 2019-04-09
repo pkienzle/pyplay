@@ -1,46 +1,46 @@
 PyPlay is a set of small tests, mostly of features of python, but it also includes
 some math experiments.
 
-Note: use `rest2html <https://raw.github.com/github/markup/master/lib/github/commands/rest2html>`_ to check README.rst before checkin
+Note: use `rest2html <https://raw.github.com/github/markup/master/lib/github/commands/rest2html>`_ to check README.rst before checkin.
 
 Math
 ====
 
 `<empirical_ci>`_
 
-    determine how many samples we need to compute 1-sigma
+    Determine how many samples we need to compute 1-sigma.
 
 `<poisson_peak>`_
 
-    peak fitting with gaussian vs. poisson statistics
+    Peak fitting with gaussian vs. poisson statistics.
 
 `<BIC>`_
 
-    test distribution of chisq values for nested models with BIC
+    Test distribution of chisq values for nested models with BIC.
 
 `<count_by_roi>`_
 
-    counting until time vs counting until count gives different rate estimates
+    Counting until time vs counting until count gives different rate estimates.
 
 Python
 ======
 
 `<excutil.py>`_
 
-    annotate a python exception, for example, by adding details of
-    what operation was being performed when the exception occurred
+    Annotate a python exception, for example, by adding details of
+    what operation was being performed when the exception occurred.
 
 `<inline_tests>`_
 
-    does nosetest allow relative imports?
+    Does nosetest allow relative imports?
 
 `<limits>`_
 
-    how do I use resource limits on python processes?
+    How do I use resource limits on python processes?
 
 `<mapapply>`_
 
-    How do I use multiprocess map with functions that take multiple arguments
+    How do I use multiprocess map with functions that take multiple arguments?
 
 `<abc>`_
 
@@ -73,18 +73,18 @@ WxPython
 
 `<aui>`_
 
-    test of floating notebooks
+    Test of floating notebooks.
 
 `<mplinteractor>`_
 
-    interactors on matplotlib graphs
+    Interactors on matplotlib graphs.
 
 Web
 ===
 
 `<ajax>`_
 
-    play with simple web applications and python cgi
+    Play with simple web applications and python cgi.
 
 `<webkit.py>`_
 
