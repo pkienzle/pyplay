@@ -68,6 +68,10 @@ Python
     off early because they used a flush each line) is already solved in python
     3.2.
 
+`<lineno.py>`_
+
+    Find the file/line for the current python command.
+
 WxPython
 ========
 
