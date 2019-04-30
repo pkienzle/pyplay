@@ -72,6 +72,10 @@ Python
 
     Find the file/line for the current python command.
 
+`<pytest_yield>`_
+
+    Use test generators with yield work with pytest.
+
 WxPython
 ========
 
