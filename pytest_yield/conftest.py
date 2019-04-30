@@ -55,19 +55,36 @@ def pytest_pycollect_makeitem(collector, name, obj):
 
 def _yield_unittest_case(collector, name, obj):
     method = obj._testMethodName
+    testid = "%s[%s]" % (name, method)
     setup = getattr(obj, 'setUp', lambda: None)
     call = getattr(obj, method)
     teardown = getattr(obj, 'tearDown', lambda: None)
+    # CRUFT: @unittest.expectedFailure changes between python 2 and python 3.
+    # py3: set method.__unittest_expecting_failure__ = True.
+    # py2: wrapper method which raises _ExpectedFailure or _UnexpectedSuccess.
+    expecting_failure = getattr(call, '__unittest_expecting_failure__', False)
+    skip = getattr(call, '__unittest_skip__', None)
     def run():
+        if skip:
+            pytest.skip(skip)
+        failed = False
         setup()
         try:
             call()
+        except Exception as exc:
+            failed = True
+            if expecting_failure:
+                pass
+            elif exc.__class__.__name__ != "_ExpectedFailure":
+                raise
         finally:
             teardown()
+        if expecting_failure and not failed:
+            raise Exception("unexpected success for %s"%method)
+
     # TODO: description is available as obj.shortDescription()
     args = ()
-    index = "[%s]" % method
-    test = pytest.Function(name+index, collector, args=args, callobj=run)
+    test = pytest.Function(testid, collector, args=args, callobj=run)
     return test
 
 def _split_yielded_test(obj, number):
